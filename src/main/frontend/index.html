@@ -1,0 +1,274 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>AdvProject</title>
+</head>
+<style>
+    .container {
+        display: flex;
+        flex-direction: row;
+    }
+    .left-pane {
+        width: 70%;
+    }
+    .left-pane-header {
+        display: flex;
+        flex-direction: row;
+        align-items: center;
+    }
+    #content {
+        padding: 0 1.5rem 0 0;
+    }
+    #loading {
+        margin: 0 auto;
+    }
+    #titles > span {
+        text-align: justify;
+        font-family: Arial, serif;
+        text-decoration: underline;
+        cursor: pointer;
+    }
+    #article-text {
+        text-align: justify;
+        font-family: Arial, serif;
+    }
+    table, th, td {
+        border: thin solid;
+        margin: 0 auto;
+    }
+    .right-pane {
+        width: 30%;
+    }
+    #logs {
+        padding: 0 1rem;
+        border: medium solid;
+        border-radius: 5px;
+        overflow-y: scroll;
+        height: 80vh;
+    }
+</style>
+<script>
+    // For the time now
+    Date.prototype.timeNow = function () {
+        return ((this.getHours() < 10) ? "0" : "") + this.getHours() + ":" +
+            ((this.getMinutes() < 10) ? "0" : "") + this.getMinutes() + ":" +
+            ((this.getSeconds() < 10) ? "0" : "") + this.getSeconds() + "." +
+            ((this.getMilliseconds() < 10) ? "00" : (this.getMilliseconds() < 100 ? "0" : "")) + this.getMilliseconds();
+    }
+
+    let socket;
+    let connected = false;
+    const serverAddress = 'ws://localhost:8887';
+
+    window.onload = () => {
+        logClient(`Establishing connection with server at ${serverAddress}...`);
+        setupServer();
+    };
+
+    function setupServer() {
+        socket = new WebSocket(serverAddress);
+
+        socket.onopen = (event) => {
+            connected = true;
+            const msg = 'Hello Server!';
+            logClient(`Sending '${msg}' to server`);
+            socket.send(msg);
+        };
+
+        socket.onmessage = (event) => {
+            const message = JSON.parse(event.data);
+            if (message.type === "INFO") {
+                logServer(message.value, message);
+                return;
+            }
+            showSpinner(false);
+            logClient(`Got message of type '${message.type}' from server, refreshing UI`, message);
+            if (message.type === "DATA_TITLES") {
+                addTitlesText(message.value);
+            } else if (message.type === "DATA_ARTICLE") {
+                addArticleText(message.value);
+            } else if (message.type === "DATA_SENTIMENT") {
+                addSentimentTable(message.value);
+            }
+            logClient("UI refreshed");
+        };
+
+        socket.onerror = (event) => {
+            connected = false;
+            logClient('Socket error', event);
+        };
+
+        socket.onclose = (event) => {
+            connected = false;
+            logClient('Socket close', event);
+        };
+    }
+
+    function logClient(msg, obj = null) {
+        log('client', msg, obj);
+    }
+
+    function logServer(msg, obj = null) {
+        log('server', msg, obj);
+    }
+
+    function log(source, msg, obj = null) {
+        const handle = document.getElementById("logs");
+        const p = document.createElement('p');
+        const time = new Date().timeNow();
+        p.textContent = `[${source}] ${time} ${msg}`;
+        handle.prepend(p);
+        if (obj != null) {
+            console.log(msg, obj);
+        }
+    }
+
+    function addTitlesText(titles) {
+        clearView();
+        const handle = document.getElementById("titles");
+        let i = 0;
+        for (const title of titles) {
+            const span = document.createElement('span');
+            span.setAttribute("id", i.toString());
+            span.textContent = title;
+            span.onclick = (ev) => {
+                onTitleClick(ev.target.id);
+            }
+            handle.appendChild(span);
+            handle.appendChild(document.createElement('br'));
+            handle.appendChild(document.createElement('br'));
+            i++;
+        }
+    }
+
+    function clearView() {
+        const content = document.getElementById('content');
+        content.firstElementChild.innerHTML = '';
+        content.firstElementChild.nextElementSibling.innerHTML = '';
+        const table = document.getElementById("my-table");
+        if (table !== null) {
+            logClient("Hiding table");
+            table.remove();
+        }
+        showSentimentButton(false);
+    }
+
+    function showSentimentButton(visible) {
+        const sentimentButton = document.getElementById('sentiment-button');
+        sentimentButton.style.visibility = visible === true ? 'visible' : 'hidden';
+    }
+
+    function addArticleText(text) {
+        clearView();
+        showSentimentButton(true);
+        const handle = document.getElementById("article-text");
+        for (const sentence of text) {
+            const p = document.createElement('p');
+            p.textContent = sentence;
+            handle.appendChild(p);
+        }
+    }
+
+    function addSentimentTable(data) {
+        logClient("Displaying table");
+        const table = document.createElement('table');
+        table.setAttribute("id", "my-table");
+        const tr = document.createElement('tr');
+        const th1 = document.createElement('th');
+        th1.textContent = 'Sentence';
+        const th2 = document.createElement('th');
+        th2.textContent = 'Sentiment';
+        tr.appendChild(th1);
+        tr.appendChild(th2);
+        table.appendChild(tr);
+        for (const value of data.list) {
+            const tr = document.createElement('tr');
+            const td1 = document.createElement('td');
+            td1.textContent = value.sentence;
+            const td2 = document.createElement('td');
+            td2.textContent = value.sentiment;
+            tr.appendChild(td1);
+            tr.appendChild(td2);
+            table.appendChild(tr);
+        }
+        const tr1 = document.createElement('tr');
+        const th3 = document.createElement('th');
+        th3.textContent = 'Average sentiment';
+        const th4 = document.createElement('th');
+        th4.textContent = data.average;
+        tr1.appendChild(th3);
+        tr1.appendChild(th4);
+        table.appendChild(tr1);
+        const content = document.getElementById('content');
+        content.prepend(table);
+    }
+
+    function onTitleClick(index) {
+        sendMessageIfConnected(`LOAD_ARTICLE-${index}`);
+    }
+
+    function sendMessageIfConnected(message) {
+        if (connected) {
+            showSpinner(true);
+            logClient(`Sending '${message}' to server`);
+            socket.send(message);
+        } else {
+            logClient("Socket is not connected");
+        }
+    }
+
+    function onLoadClick() {
+        const table = document.getElementById("my-table");
+        if (table !== null) {
+            table.remove();
+        }
+        sendMessageIfConnected("LOAD_TITLES");
+    }
+
+    function onSentimentClick() {
+        sendMessageIfConnected("LOAD_SENTIMENT");
+    }
+
+    function showSpinner(value) {
+        const div = document.getElementById('loading');
+        if (value) {
+            div.style.visibility = 'visible';
+            div.style.width = '40px';
+            div.style.height = '40px';
+        } else {
+            div.style.visibility = 'hidden';
+            div.style.width = '0';
+            div.style.height = '0';
+        }
+    }
+</script>
+<body>
+    <div class="container">
+        <div class="left-pane">
+            <div class="left-pane-header">
+                <h1>News</h1>
+                <button onclick="onLoadClick()" style="margin-left: 1rem; height: 2rem;">
+                    Load titles
+                </button>
+                <button onclick="onSentimentClick()" id="sentiment-button"
+                        style="visibility: hidden; margin-left: 1rem; height: 2rem;" >
+                    Load sentiment
+                </button>
+            </div>
+            <div id="loading" style="visibility: hidden">
+                <img src="loading.svg"  alt="Loading spinner"/>
+            </div>
+            <div id="content">
+                <div id="titles"></div>
+                <div id="article-text">
+                </div>
+            </div>
+        </div>
+        <div class="right-pane">
+            <h1>Logs</h1>
+            <div id="logs"></div>
+        </div>
+    </div>
+</body>
+</html>
