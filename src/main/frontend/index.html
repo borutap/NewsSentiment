@@ -126,6 +126,7 @@
 
     function addTitlesText(titles) {
         clearView();
+        showReloadButton(true);
         const handle = document.getElementById("titles");
         let i = 0;
         for (const title of titles) {
@@ -152,11 +153,20 @@
             table.remove();
         }
         showSentimentButton(false);
+        showReloadButton(false);
     }
 
     function showSentimentButton(visible) {
-        const sentimentButton = document.getElementById('sentiment-button');
-        sentimentButton.style.visibility = visible === true ? 'visible' : 'hidden';
+        showButton('sentiment-button', visible);
+    }
+
+    function showReloadButton(visible) {
+        showButton('reload-button', visible);
+    }
+
+    function showButton(buttonId, visible) {
+        const button = document.getElementById(buttonId);
+        button.style.visibility = visible === true ? 'visible' : 'hidden';
     }
 
     function addArticleText(text) {
@@ -171,6 +181,7 @@
     }
 
     function addSentimentTable(data) {
+        removeTableIfExists();
         logClient("Displaying table");
         const table = document.createElement('table');
         table.setAttribute("id", "my-table");
@@ -204,7 +215,15 @@
         content.prepend(table);
     }
 
+    function removeTableIfExists() {
+        const table = document.getElementById("my-table");
+        if (table !== null) {
+            table.remove();
+        }
+    }
+
     function onTitleClick(index) {
+        localStorage.setItem("articleIndexClicked", index);
         sendMessageIfConnected(`LOAD_ARTICLE-${index}`);
     }
 
@@ -219,15 +238,17 @@
     }
 
     function onLoadClick() {
-        const table = document.getElementById("my-table");
-        if (table !== null) {
-            table.remove();
-        }
+        removeTableIfExists();
         sendMessageIfConnected("LOAD_TITLES");
     }
 
+    function onForceReloadClick() {
+        sendMessageIfConnected("RELOAD_TITLES");
+    }
+
     function onSentimentClick() {
-        sendMessageIfConnected("LOAD_SENTIMENT");
+        const articleIndex = localStorage.getItem("articleIndexClicked");
+        sendMessageIfConnected(`LOAD_SENTIMENT-${articleIndex}`);
     }
 
     function showSpinner(value) {
@@ -254,6 +275,10 @@
                 <button onclick="onSentimentClick()" id="sentiment-button"
                         style="visibility: hidden; margin-left: 1rem; height: 2rem;" >
                     Load sentiment
+                </button>
+                <button onclick="onForceReloadClick()" id="reload-button"
+                        style="margin-left: 1rem; height: 2rem;">
+                    Force reload titles
                 </button>
             </div>
             <div id="loading" style="visibility: hidden">

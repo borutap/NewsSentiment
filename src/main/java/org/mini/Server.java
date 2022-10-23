@@ -22,6 +22,7 @@ public class Server extends WebSocketServer {
     }
 
     public void send(Response response) {
+        // in the future log should know where to send - have WebSocket object associated with current exec path
         if (lastConnection == null) {
             return;
         }
