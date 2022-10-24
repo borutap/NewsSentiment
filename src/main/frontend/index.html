@@ -147,11 +147,7 @@
         const content = document.getElementById('content');
         content.firstElementChild.innerHTML = '';
         content.firstElementChild.nextElementSibling.innerHTML = '';
-        const table = document.getElementById("my-table");
-        if (table !== null) {
-            logClient("Hiding table");
-            table.remove();
-        }
+        removeTableIfExists();
         showSentimentButton(false);
         showReloadButton(false);
     }
