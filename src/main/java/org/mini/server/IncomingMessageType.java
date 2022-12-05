@@ -5,7 +5,7 @@ public enum IncomingMessageType {
     LOAD_TITLES,
     RELOAD_TITLES,
     SERIALIZE,
-    LOAD_ARTICLE,   // LOAD_ARICLE-indexOfArticle
+    LOAD_ARTICLE,   // LOAD_ARTICLE-indexOfArticle
     LOAD_SENTIMENT; // LOAD_SENTIMENT-indexOfArticle
 
     public static IncomingMessageType fromString(String text) {
