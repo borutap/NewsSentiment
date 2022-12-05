@@ -1,5 +1,9 @@
 package org.mini;
 
+import org.mini.server.Response;
+import org.mini.server.ResponseMessageType;
+import org.mini.server.Server;
+
 public class PublicLogger {
     private final Server server;
 
@@ -11,6 +15,6 @@ public class PublicLogger {
         if (server == null) {
             return;
         }
-        server.send(new Response(message, MESSAGE_TYPE.INFO));
+        server.send(new Response(message, ResponseMessageType.INFO));
     }
 }

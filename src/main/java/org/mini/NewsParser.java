@@ -1,5 +1,9 @@
 package org.mini;
 
+import org.mini.scrape.ArticlePageData;
+import org.mini.scrape.HomePageData;
+import org.mini.scrape.WebPageReader;
+
 import java.util.List;
 
 public class NewsParser {
@@ -61,8 +65,8 @@ public class NewsParser {
     }
 
     private void loadHomePage() throws Exception {
-        log.log(String.format("Requesting %s body", Configuration.Url));
-        String homePageHtml = reader.getPageBody(Configuration.Url);
+        log.log(String.format("Requesting %s body", Configuration.NewsSourceUrl));
+        String homePageHtml = reader.getPageBody(Configuration.NewsSourceUrl);
 
         log.log("Parsing home page");
         homePageData = new HomePageData(homePageHtml);

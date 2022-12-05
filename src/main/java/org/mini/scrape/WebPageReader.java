@@ -1,4 +1,4 @@
-package org.mini;
+package org.mini.scrape;
 
 import java.net.URI;
 import java.net.http.HttpClient;
@@ -15,8 +15,7 @@ public class WebPageReader {
     public String getPageBody(String URL) throws Exception {
         var request = createRequest(URL);
         try {
-            HttpResponse<String> response = client.send(request,
-                    HttpResponse.BodyHandlers.ofString());
+            HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
             return response.body();
         } catch (Exception e) {
             String message = String.format(

@@ -1,6 +1,6 @@
-package org.mini;
+package org.mini.server;
 
-public enum MESSAGE_TYPE {
+public enum ResponseMessageType {
     INFO,
     DATA_TITLES,
     DATA_ARTICLE,

@@ -1,4 +1,4 @@
-package org.mini;
+package org.mini.sentiment;
 
 import edu.stanford.nlp.ling.CoreAnnotations;
 import edu.stanford.nlp.neural.rnn.RNNCoreAnnotations;
@@ -39,7 +39,7 @@ public class NaturalLanguageProcessor {
 
             System.out.println(sentimentName + "\t" + sentimentInt + "\t" + sentence);
 
-            sumSentiment += RNNCoreAnnotations.getPredictedClass(tree);
+            sumSentiment += sentimentInt;
             sentences++;
         }
         sumSentiment /= sentences;

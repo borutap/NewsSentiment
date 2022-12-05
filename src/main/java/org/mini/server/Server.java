@@ -1,4 +1,4 @@
-package org.mini;
+package org.mini.server;
 
 import java.net.InetSocketAddress;
 import java.net.UnknownHostException;
@@ -9,20 +9,18 @@ import org.java_websocket.WebSocket;
 import org.java_websocket.handshake.ClientHandshake;
 import org.java_websocket.server.WebSocketServer;
 
-/**
- * A simple WebSocketServer implementation. Keeps track of a "chatroom".
- */
 public class Server extends WebSocketServer {
     private WebSocket lastConnection;
     private IncomingMessageHandler messageHandler;
     private final Gson gson;
+
     public Server(int port) throws UnknownHostException {
         super(new InetSocketAddress(port));
         gson = new Gson();
     }
 
     public void send(Response response) {
-        // in the future log should know where to send - have WebSocket object associated with current exec path
+
         if (lastConnection == null) {
             return;
         }
@@ -30,7 +28,7 @@ public class Server extends WebSocketServer {
     }
 
     private String infoInJson(String message) {
-        return gson.toJson(new Response(message, MESSAGE_TYPE.INFO));
+        return gson.toJson(new Response(message, ResponseMessageType.INFO));
     }
 
     @Override
@@ -41,13 +39,11 @@ public class Server extends WebSocketServer {
         // This method sends a message to all clients connected
         broadcast(infoInJson("New connection: " + conn.getRemoteSocketAddress()));
         System.out.println(
-                conn.getRemoteSocketAddress().getAddress().getHostAddress() + " entered the room!");
+                conn.getRemoteSocketAddress().getAddress().getHostAddress() + " is in!");
     }
 
     @Override
     public void onClose(WebSocket conn, int code, String reason, boolean remote) {
-        broadcast(infoInJson(conn + " has left the room!") );
-        System.out.println(conn + " has left the room!");
     }
 
     @Override

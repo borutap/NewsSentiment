@@ -1,5 +1,7 @@
 package org.mini;
 
+import org.mini.scrape.ArticlePageData;
+
 import java.util.*;
 
 public class NewsCache {

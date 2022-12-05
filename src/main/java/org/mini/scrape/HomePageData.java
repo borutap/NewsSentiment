@@ -1,9 +1,10 @@
-package org.mini;
+package org.mini.scrape;
 
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
+import org.mini.Configuration;
 
 import java.util.List;
 
@@ -21,7 +22,7 @@ public class HomePageData extends PageData {
         Elements aHrefs = mainPageDocument.select("a[href]");
         titles = aHrefs.subList(2, aHrefs.size() - 2).stream().map(Element::text).toList();
         links = aHrefs.subList(2, aHrefs.size() - 2).stream().map(element -> {
-            return Configuration.Url + element.attr("href").substring(3);
+            return Configuration.NewsSourceUrl + element.attr("href").substring(3);
         }).toList();
     }
 

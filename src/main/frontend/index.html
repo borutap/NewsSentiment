@@ -71,7 +71,7 @@
 
         socket.onopen = (event) => {
             connected = true;
-            const msg = 'Hello Server!';
+            const msg = 'HELLO_SERVER';
             logClient(`Sending '${msg}' to server`);
             socket.send(msg);
         };
@@ -127,6 +127,7 @@
     function addTitlesText(titles) {
         clearView();
         showReloadButton(true);
+        showSerializeButton(true);
         const handle = document.getElementById("titles");
         let i = 0;
         for (const title of titles) {
@@ -150,6 +151,7 @@
         removeTableIfExists();
         showSentimentButton(false);
         showReloadButton(false);
+        showSerializeButton(false);
     }
 
     function showSentimentButton(visible) {
@@ -158,6 +160,10 @@
 
     function showReloadButton(visible) {
         showButton('reload-button', visible);
+    }
+
+    function showSerializeButton(visible) {
+        showButton('serialize-button', visible);
     }
 
     function showButton(buttonId, visible) {
@@ -223,9 +229,9 @@
         sendMessageIfConnected(`LOAD_ARTICLE-${index}`);
     }
 
-    function sendMessageIfConnected(message) {
+    function sendMessageIfConnected(message, startSpinner = true) {
         if (connected) {
-            showSpinner(true);
+            showSpinner(startSpinner);
             logClient(`Sending '${message}' to server`);
             socket.send(message);
         } else {
@@ -240,6 +246,10 @@
 
     function onForceReloadClick() {
         sendMessageIfConnected("RELOAD_TITLES");
+    }
+
+    function onSerializeClick() {
+        sendMessageIfConnected("SERIALIZE", false);
     }
 
     function onSentimentClick() {
@@ -275,6 +285,10 @@
                 <button onclick="onForceReloadClick()" id="reload-button"
                         style="margin-left: 1rem; height: 2rem;">
                     Force reload titles
+                </button>
+                <button onclick="onSerializeClick()" id="serialize-button"
+                        style="margin-left: 1rem; height: 2rem;">
+                    Serialize sentiment
                 </button>
             </div>
             <div id="loading" style="visibility: hidden">

@@ -1,5 +1,8 @@
 package org.mini;
 
+import org.mini.sentiment.NaturalLanguageProcessor;
+import org.mini.server.Server;
+
 import java.net.UnknownHostException;
 
 public class Main {
