@@ -1,30 +1,32 @@
 package org.mini.server;
 
-import java.net.InetSocketAddress;
-import java.net.UnknownHostException;
-import java.nio.ByteBuffer;
-
 import com.google.gson.Gson;
 import org.java_websocket.WebSocket;
 import org.java_websocket.handshake.ClientHandshake;
 import org.java_websocket.server.WebSocketServer;
 
+import java.net.InetSocketAddress;
+import java.nio.ByteBuffer;
+import java.util.Dictionary;
+import java.util.Hashtable;
+
 public class Server extends WebSocketServer {
-    private WebSocket lastConnection;
+    private final Dictionary<Thread, WebSocket> connections;
     private IncomingMessageHandler messageHandler;
     private final Gson gson;
 
-    public Server(int port) throws UnknownHostException {
+    public Server(int port) {
         super(new InetSocketAddress(port));
+        connections = new Hashtable<>();
         gson = new Gson();
     }
 
-    public void send(Response response) {
-
-        if (lastConnection == null) {
+    public void send(Thread thread, Response response) {
+        WebSocket connection = connections.get(thread);
+        if (connection == null) {
             return;
         }
-        lastConnection.send(gson.toJson(response));
+        connection.send(gson.toJson(response));
     }
 
     private String infoInJson(String message) {
@@ -33,7 +35,6 @@ public class Server extends WebSocketServer {
 
     @Override
     public void onOpen(WebSocket conn, ClientHandshake handshake) {
-        lastConnection = conn;
         // This method sends a message to the new client
         conn.send(infoInJson("Welcome to the server!"));
         // This method sends a message to all clients connected
@@ -48,9 +49,11 @@ public class Server extends WebSocketServer {
 
     @Override
     public void onMessage(WebSocket conn, String message) {
+        connections.put(Thread.currentThread(), conn);
         Response response = messageHandler.handle(message);
         conn.send(gson.toJson(response));
         System.out.println(conn + ": " + message);
+        connections.remove(Thread.currentThread());
     }
 
     @Override

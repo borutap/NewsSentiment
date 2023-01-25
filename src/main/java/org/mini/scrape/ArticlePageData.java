@@ -12,7 +12,7 @@ public class ArticlePageData extends PageData {
     private List<String> paragraphs;
 
     public ArticlePageData(String html) {
-        extractFromHtml(html);
+        super(html);
     }
 
     @Override

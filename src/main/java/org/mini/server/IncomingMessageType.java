@@ -16,7 +16,8 @@ public enum IncomingMessageType {
         }
         if (text.startsWith("LOAD_ARTICLE-")) {
             return LOAD_ARTICLE;
-        } else if (text.startsWith("LOAD_SENTIMENT-")) {
+        }
+        if (text.startsWith("LOAD_SENTIMENT-")) {
             return LOAD_SENTIMENT;
         }
         return null;

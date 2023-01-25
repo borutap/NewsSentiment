@@ -13,17 +13,20 @@ public class HomePageData extends PageData {
     private List<String> links;
 
     public HomePageData(String html) {
-        extractFromHtml(html);
+        super(html);
     }
 
     @Override
     protected void extractFromHtml(String html) {
         Document mainPageDocument = Jsoup.parse(html);
         Elements aHrefs = mainPageDocument.select("a[href]");
-        titles = aHrefs.subList(2, aHrefs.size() - 2).stream().map(Element::text).toList();
-        links = aHrefs.subList(2, aHrefs.size() - 2).stream().map(element -> {
-            return Configuration.NewsSourceUrl + element.attr("href").substring(3);
-        }).toList();
+        titles = aHrefs
+                .subList(2, aHrefs.size() - 2).stream()
+                .map(Element::text)
+                .toList();
+        links = aHrefs.subList(2, aHrefs.size() - 2).stream()
+                .map(element -> Configuration.NewsSourceUrl + element.attr("href").substring(3))
+                .toList();
     }
 
     public List<String> getTitles() {

@@ -15,6 +15,6 @@ public class PublicLogger {
         if (server == null) {
             return;
         }
-        server.send(new Response(message, ResponseMessageType.INFO));
+        server.send(Thread.currentThread(), new Response(message, ResponseMessageType.INFO));
     }
 }

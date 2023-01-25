@@ -25,33 +25,37 @@ public class NaturalLanguageProcessor {
     // each sentence has scale of 0 = very negative, 1 = negative, 2 = neutral, 3 = positive,
     // and 4 = very positive.
     public static SentimentData getSentimentData(String text) throws Exception {
-        List<SentenceAndSentiment> sentenceAndSentiment = new ArrayList<>();
-        double sumSentiment = 0.0;
-        int sentences = 0;
-        Annotation annotation = pipeline.process(text);
-        for (CoreMap sentence : annotation.get(CoreAnnotations.SentencesAnnotation.class)) {
-            Tree tree = sentence.get(SentimentAnnotatedTree.class);
+        try {
+            List<SentenceAndSentiment> sentenceAndSentiment = new ArrayList<>();
+            double sumSentiment = 0.0;
+            int sentences = 0;
+            Annotation annotation = pipeline.process(text);
+            for (CoreMap sentence : annotation.get(CoreAnnotations.SentencesAnnotation.class)) {
+                Tree tree = sentence.get(SentimentAnnotatedTree.class);
 
-            int sentimentInt = RNNCoreAnnotations.getPredictedClass(tree);
-            String sentimentName = sentence.get(SentimentCoreAnnotations.SentimentClass.class);
+                int sentimentInt = RNNCoreAnnotations.getPredictedClass(tree);
+                String sentimentName = sentence.get(SentimentCoreAnnotations.SentimentClass.class);
 
-            sentenceAndSentiment.add(new SentenceAndSentiment(sentence.toString(), sentimentName));
+                sentenceAndSentiment.add(new SentenceAndSentiment(sentence.toString(), sentimentName));
 
-            System.out.println(sentimentName + "\t" + sentimentInt + "\t" + sentence);
+                System.out.println(sentimentName + "\t" + sentimentInt + "\t" + sentence);
 
-            sumSentiment += sentimentInt;
-            sentences++;
+                sumSentiment += sentimentInt;
+                sentences++;
+            }
+            sumSentiment /= sentences;
+            int averageSentimentInt = (int)Math.round(sumSentiment);
+            String averageSentiment = switch (averageSentimentInt) {
+                case 0 -> "Very negative";
+                case 1 -> "Negative";
+                case 2 -> "Neutral";
+                case 3 -> "Positive";
+                case 4 -> "Very positive";
+                default -> throw new Exception("Unexpected averageSentimentInt");
+            };
+            return new SentimentData(sentenceAndSentiment, averageSentiment);
+        } catch (OutOfMemoryError e) {
+            throw new Exception("Zabraklo pamieci RAM: " + e.getMessage());
         }
-        sumSentiment /= sentences;
-        int averageSentimentInt = (int)Math.round(sumSentiment);
-        String averageSentiment = switch (averageSentimentInt) {
-            case 0 -> "Very negative";
-            case 1 -> "Negative";
-            case 2 -> "Neutral";
-            case 3 -> "Positive";
-            case 4 -> "Very positive";
-            default -> throw new Exception("Unexpected averageSentimentInt");
-        };
-        return new SentimentData(sentenceAndSentiment, averageSentiment);
     }
 }
