@@ -73,12 +73,12 @@ public class IncomingMessageHandler {
     }
 
     private Response handleLoadArticleMessage(int index) throws Exception {
+        loadNewsParser();
         return new Response(newsParser.getArticleParagraphs(index), ResponseMessageType.DATA_ARTICLE);
     }
 
     private void loadNewsParser() throws Exception {
         if (newsParser != null) {
-            log.log("Using already initialized news parser");
             return;
         } 
         log.log("Initializing news parser");

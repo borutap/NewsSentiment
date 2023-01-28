@@ -62,11 +62,11 @@
     const serverAddress = 'ws://localhost:8887';
 
     window.onload = () => {
-        logClient(`Establishing connection with server at ${serverAddress}...`);
         setupServer();
     };
 
     function setupServer() {
+        logClient(`Establishing connection with server at ${serverAddress}...`);
         socket = new WebSocket(serverAddress);
 
         socket.onopen = (event) => {
@@ -101,7 +101,8 @@
 
         socket.onclose = (event) => {
             connected = false;
-            logClient('Socket close', event);
+            logClient('Socket closed, retrying in 3 seconds...', event);
+            setTimeout(setupServer, 3000);
         };
     }
 

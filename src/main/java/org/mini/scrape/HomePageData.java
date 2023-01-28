@@ -6,7 +6,9 @@ import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 import org.mini.Configuration;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Stream;
 
 public class HomePageData extends PageData {
     private List<String> titles;
@@ -19,14 +21,22 @@ public class HomePageData extends PageData {
     @Override
     protected void extractFromHtml(String html) {
         Document mainPageDocument = Jsoup.parse(html);
-        Elements aHrefs = mainPageDocument.select("a[href]");
-        titles = aHrefs
-                .subList(2, aHrefs.size() - 2).stream()
+        Elements allAHrefs = mainPageDocument.select("a[href]");
+        // Some Elements are junk, omit them
+        List<Element> aHrefs = allAHrefs
+                .subList(2, allAHrefs.size() - 2)
+                .stream()
+                .toList();
+        titles = aHrefs.stream()
                 .map(Element::text)
                 .toList();
-        links = aHrefs.subList(2, aHrefs.size() - 2).stream()
-                .map(element -> Configuration.NewsSourceUrl + element.attr("href").substring(3))
+        links = aHrefs.stream()
+                .map(element -> buildArticleUrl(element.attr("href")))
                 .toList();
+    }
+
+    private String buildArticleUrl(String href) {
+        return Configuration.NewsSourceUrl + href;
     }
 
     public List<String> getTitles() {
